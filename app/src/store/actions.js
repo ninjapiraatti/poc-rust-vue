@@ -1,3 +1,5 @@
+import api from '../api.js'
+
 export default {
 	async setUser(context, data) {
 		const userData = await fetch(`/api/users/${data}`, {
@@ -7,6 +9,7 @@ export default {
 		.then((response) => response.json())
 		context.commit('setUser', userData)
 	},
+
 	async setChosenProject (context, data) {
 		try {
 			let hasNeeds = true
@@ -48,5 +51,23 @@ export default {
 		} catch (errors) {
 			console.log(errors)
 		}
+	},
+
+	async setProject(context, id) {
+		const project = await Promise.all([
+			api.getProject(id),
+			api.getProjectNeeds(id),
+		])
+			.then(async ([project, needs]) => {
+				if (project) project.needs = needs
+				return project
+			})
+
+		context.commit('setProject', project)
+	},
+
+	async setProjectNeeds(context, id) {
+		const needs = await api.getProjectNeeds(id)
+		context.commit('updateProject', { needs })
 	},
 }

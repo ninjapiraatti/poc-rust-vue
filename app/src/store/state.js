@@ -4,4 +4,7 @@ export default {
 	projects: JSON.parse(localStorage.getItem('projects')),
 	nextpage: '',
 	errorObject: null,
+	project: null,
+	skills: null,
+	levels: null,
 }

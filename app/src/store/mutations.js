@@ -1,3 +1,5 @@
+import router from '../router.js'
+
 export default {
 	setUser(state, data) {
 		state.loggeduser = data;
@@ -110,5 +112,21 @@ export default {
 		localStorage.removeItem('user');
 		localStorage.removeItem('projects');
 		router.push({ name: 'page-login' })
-	}
+	},
+
+	setProject(state, data) {
+		state.project = data
+	},
+
+	updateProject(state, data) {
+		state.project = { ...state.project, ...data }
+	},
+
+	setSkills(state, skills) {
+		state.skills = Array.isArray(skills) ? skills : null
+	},
+
+	setLevels(state, levels) {
+		state.levels = Array.isArray(levels) ? levels : null
+	},
 }

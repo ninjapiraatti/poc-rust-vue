@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import store from './store'
+import state from './store/state.js'
 import { Modal } from 'bootstrap'
 
 import Home from './views/Home.vue'
@@ -10,6 +10,9 @@ import Profile from './views/Profile.vue'
 import Admin from './views/Admin.vue'
 import PageError from './views/PageError.vue'
 import Project from './views/Project.vue'
+import FormProject from './forms/FormProject.vue'
+import FormProjectNeed from './forms/FormProjectNeed.vue'
+import FormProjectNeedSkill from './forms/FormProjectNeedSkill.vue'
 import Gdpr from './views/Gdpr.vue'
 import Login from './views/Login.vue'
 
@@ -23,7 +26,11 @@ const router = createRouter({
 		{ path: '/app/admin', component: Admin, name: 'page-admin' },
 		{ path: '/app/gdpr', component: Gdpr, name: 'page-gdpr' },
 		{ path: '/app/login', component: Login, name: 'page-login' },
-		{ path: '/app/project/:id', component: Project, name: 'page-project' },
+		{ path: '/app/project/:id', component: Project, name: 'page-project', children: [
+			{ path: 'edit', component: FormProject, name: 'page-project-edit' },
+			{ path: 'edit/need/:needId?', component: FormProjectNeed, name: 'page-project-need' },
+			{ path: 'edit/need/:needId/skill/:skillId?', component: FormProjectNeedSkill, name: 'page-project-skill' },
+		] },
 		{ path: '/app/:pathMatch(.*)*', component: PageError, name: 'page-error' },
 	],
 	history: createWebHistory(),
@@ -47,8 +54,8 @@ router.beforeEach((to, from, next) => {
 	if (to.name !== 'page-login' 
 		&& to.name !== 'page-confirm'
 		&& to.name !== 'page-forgot-password'
-		&& !store.state.loggeduser) {
-			store.state.nextpage = to.fullPath
+		&& !state.loggeduser) {
+			state.nextpage = to.fullPath
 			next({ name: 'page-login' })
 	}
 	else next()
