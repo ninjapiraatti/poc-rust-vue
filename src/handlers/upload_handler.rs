@@ -1,3 +1,4 @@
+use std::io::Write;
 use crate::errors::ServiceError;
 use crate::models::users::LoggedUser;
 use crate::models::users::Pool;
@@ -7,25 +8,21 @@ use actix_web::Error;
 use actix_web::{error::BlockingError, web, HttpResponse};
 use futures::{StreamExt, TryStreamExt};
 use log::trace;
-use serde::{Deserialize, Serialize};
-use std::io::Write;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct File {
-	name: String,
-}
 
 pub async fn save_file(
 	mut payload: Multipart,
 	pool: web::Data<Pool>,
 	logged_user: LoggedUser,
 ) -> Result<HttpResponse, Error> {
-	let filename = format!("{}.pdf", logged_user.uid);
-	while let Ok(Some(mut field)) = payload.try_next().await {
-		let filepath = format!("./{}", sanitize_filename::sanitize(&filename));
 
+	let mut filename = "".to_string();
+ 	while let Ok(Some(mut field)) = payload.try_next().await {
+		 let content_type = field.content_disposition().unwrap();
+		 filename = format!("{}.pdf", content_type.get_filename().unwrap());
+        let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
 		let mut f = web::block(|| std::fs::File::create(filepath)).await.unwrap();
-
+		
 		while let Some(chunk) = field.next().await {
 			let data = chunk.unwrap();
 			f = web::block(move || f.write_all(&data).map(|_| f)).await?;
@@ -55,7 +52,7 @@ pub async fn get_userfiles(
 	pool: web::Data<Pool>,
 	_logged_user: LoggedUser,
 ) -> Result<HttpResponse, ServiceError> {
-	trace!("Getting all skills: logged_user= {:#?}", &_logged_user);
+	trace!("Getting all uploads: logged_user= {:#?}", &_logged_user);
 
 	let uuid_query = uuid::Uuid::parse_str(&uuid_data)?;
 
